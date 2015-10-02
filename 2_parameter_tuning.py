@@ -1,9 +1,12 @@
 import numpy as np
+from sklearn.linear_model import Ridge
+from sklearn.grid_search import GridSearchCV
+from sklearn.preprocessing import StandardScaler
 
 def fill_missing_values(filename):
     f = open(filename)
     data = f.readlines()
-    print len(data)
+    #print len(data)
     data = map(lambda x: x.strip().split(','), data)
 
     data_mat = np.array(data)
@@ -51,21 +54,22 @@ def fill_missing_values(filename):
     reduced_labels = labels[useful_cols]
     return data_mat, labels, reduced_data, reduced_labels
 
-def make_data_splits(X, Y, num_data_points, train_split, prefix):
-    Y = np.reshape(Y,(Y.shape[0],1))
-    X_Y = np.concatenate((X, Y), axis=1)
-    xp = int(num_data_points*train_split)
-    for i in range(5):
-        fname_x = prefix + '-train0' + str(i+1) + '.csv'
-        fname_y = prefix + '-test0' + str(i+1) + '.csv'
-        np.random.shuffle(X_Y)
-        np.savetxt(fname_x, X_Y[:xp], delimiter=',')
-        np.savetxt(fname_y, X_Y[xp:], delimiter=',')
+def ridge_regression(splits,tr_X,tr_Y):
+        alphas = np.array([10000,10,0.1,0.01,0.001,0.0001,0])
+        model = Ridge()
+        grid = GridSearchCV(estimator=model, param_grid=dict(alpha=alphas), cv=splits)
+        grid.fit(tr_X, tr_Y)
+        print(grid.best_estimator_.alpha)
+        print grid.best_score_
 
-
-train_split = .8
 filename = './2_que_data/communities.data'
 data_X, labels_Y, reduced_X, reduced_Y = fill_missing_values(filename)
-make_data_splits(data_X, labels_Y, data_X.shape[0], train_split, prefix='CandC')
-#make_data_splits(data_X, labels_Y, data_X.shape[0], train_split, prefix='Reduced')
+scaler = StandardScaler()
+scaler.fit(data_X)
+data_X = scaler.transform(data_X)
+num_splits = 5
+
+ridge_regression(num_splits,data_X,labels_Y)
+
+
 

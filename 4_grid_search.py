@@ -92,14 +92,40 @@ np.set_printoptions(suppress=True)
 train_dataXY, test_dataXY = get_data()
 folds_tr, folds_te = get_norm_nFoldData(train_dataXY, test_dataXY)
 
-clf = SVC(kernel='poly', C=.06, gamma=.049)
+clf = SVC(kernel='linear', C=.072)#, gamma=.07)
 print len(folds_tr[0]), len(folds_te[0])
 train_svm(folds_tr, folds_te, clf)
 
+import cPickle
+cPickle.dump(clf.coef_, open('Linear_Kernel.save','wb'),protocol=cPickle.HIGHEST_PROTOCOL)
 
+'''
+trainX = train_dataXY[:,:-1]
+trainY = train_dataXY[:,-1]
+testX = test_dataXY[:,:-1]
+testY = test_dataXY[:,-1]
 
+#standardise only x values not labels
+scaler = StandardScaler()
+scaler.fit(trainX)
+trainX = scaler.transform(trainX)
+
+scaler.fit(testX)
+testX = scaler.transform(testX)
+
+#[.01,.02,.03,.04,.05, .06,.07,.08,.09,.10]
+#[.01,.02,.03,.04,.05,.06,.07,.08]
+c = [ .05 + .002*i for i in range(100)]
+g = [.01+.001*i for i in range(10)]
+#c =[1.1,1.2,1.3,1.4]
+from sklearn import svm, grid_search, datasets
+parameters = {'C':c}#, 'gamma': g}
+svr = svm.SVC(kernel='linear')
+clf = grid_search.GridSearchCV(svr, parameters, cv=5)
+clf.fit(trainX, trainY)
+print clf.best_params_
 
 #np.random.shuffle(test_dataXY)
 #print test_X_Y.shape
-
+'''
 

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 mean_1 = np.zeros((10))
 
 # Mean of second class = 1
-mean_2 = np.ones((10))
+mean_2 = 0.25*np.ones((10))
 
 # Define covarince matrix with diagonal elememts as mean of class 2
 covar = .1*np.ones((10,10))
@@ -28,6 +28,25 @@ class_0_train = class_0[400:]
 class_1_test = class_1[:400]
 class_1_train = class_1[400:]
 '''
+
+def get_class_frm_score(predicted):
+    final_pred = np.zeros(predicted.shape[0])
+    cnt = 0
+    for val in predicted:
+        if abs(val-0) < abs(val-1):
+            final_pred[cnt] = 0
+        else:
+            final_pred[cnt] = 1
+        cnt+= 1
+    return final_pred
+
+def get_misclassification_error(truth, predic):
+    cnt = 0
+    for tru,pre in zip(truth,predic):
+        if tru!=pre:
+            cnt += 1
+    return cnt/float(truth.shape[0])
+
 Y_0 = np.zeros(1000).reshape((1000,1))
 Y_1 = np.ones(1000).reshape((1000,1))
 
@@ -55,9 +74,15 @@ train_Y = train_X_Y[:, -1]
 clf_LR = LM.LinearRegression()
 clf_LR.fit(train_X, train_Y)
 
-print np.mean((clf_LR.predict(test_X)-test_Y) ** 2)
-print np.count_nonzero(np.logical_xor(clf_LR.predict(test_X), test_Y))
-print clf_LR.score(test_X, test_Y)
+np.set_printoptions(suppress=True)
+#print clf_LR.predict(test_X)
+#print '******************************'
+#print test_Y
+#print 'Residual Sum of Errors ', np.mean((clf_LR.predict(test_X)-test_Y) ** 2)
+print 'Coefficients Learned : ', clf_LR.coef_
+#print np.count_nonzero(np.logical_xor(clf_LR.predict(test_X), test_Y))
+#print clf_LR.score(test_X, test_Y)
 
-
-
+predicted_labels = get_class_frm_score(clf_LR.predict(test_X))
+#print predicted_labels
+print get_misclassification_error(test_Y, predicted_labels)
